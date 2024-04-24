@@ -1,4 +1,5 @@
-FROM node:latest
+# Use Node.js image as base
+FROM node:latest AS build
 
 # Set working directory
 WORKDIR /app
@@ -9,11 +10,17 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy server files
+# Copy the ReactJS application files
 COPY . .
 
-# Expose port
-EXPOSE 5000
+# Build the React app
+RUN npm run build
 
-# Command to run the server
-CMD ["node", "index.js"]
+# Production environment
+FROM nginx:alpine
+
+# Copy build files to Nginx
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port
+EXPOSE 80
